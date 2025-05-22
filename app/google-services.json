@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "744608654760",
+    "firebase_url": "https://blueprint-8c1ca-default-rtdb.firebaseio.com",
+    "project_id": "blueprint-8c1ca",
+    "storage_bucket": "blueprint-8c1ca.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744608654760:android:894015cfb1b4fcddf4a99d",
+        "android_client_info": {
+          "package_name": "com.example.blueprintvision"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "744608654760-issaidpo2j33bq7ntol8e898de75ab6b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0ryLt2Q8YZPzWqrOgKalMfLsBa_qW3_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "744608654760-a6os7lcerlsehct3g9mss862ncm7squl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "744608654760-1qpftnrthfeg1fqdoca8vhp9hjufp4g8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "Public.BlueprintScanning.Clip"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
