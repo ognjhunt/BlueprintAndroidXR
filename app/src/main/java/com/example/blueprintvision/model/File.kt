@@ -4,9 +4,31 @@ import com.google.firebase.firestore.DocumentSnapshot
 import java.util.Date
 
 /**
- * Class representing a 3D Model stored in Firestore
+ * Class representing a File stored in Firestore
  */
-class Model(userFireDoc: Map<String, Any>) {
+class File(userFireDoc: Map<String, Any>) {
+    var id: String = ""
+    var host: String = ""
+    var name: String = ""
+    var creatorName: String = ""
+    var description: String = ""
+    var fileType: String = ""
+    var fileURL: String = ""
+    var category: String = ""
+    var scale: Double = 1.0
+    var size: Double = 10.0
+    var height: Double = 1.0
+    var width: Double = 1.0
+    var thumbnail: String? = null
+    var modelName: String = ""
+    var isPublic: Boolean? = null
+    var url: String = ""
+    var accessibility: String = ""
+    var storagePath: String = ""
+    var date: Date = Date()
+    var blueprintId: String = ""
+    var downloads: Int = 0
+    
     companion object {
         const val CREATOR = "creatorId"
         const val DATE = "date"
@@ -14,42 +36,16 @@ class Model(userFireDoc: Map<String, Any>) {
         const val MODELNAME = "modelName"
         
         /**
-         * Creates a Model from a Firestore document
+         * Creates a File from a Firestore document
          */
-        fun fromFirestore(document: DocumentSnapshot): Model {
+        fun fromFirestore(document: DocumentSnapshot): File {
             val data = document.data ?: mapOf("id" to document.id)
             val dataWithId = data.toMutableMap().apply { 
                 if (!containsKey("id")) put("id", document.id) 
             }
-            return Model(dataWithId)
+            return File(dataWithId)
         }
     }
-    
-    var id: String = ""
-    var creatorId: String = ""
-    var name: String = ""
-    var creatorName: String = ""
-    var description: String = ""
-    var category: String = ""
-    var scale: Double = 1.0
-    var size: Double = 10.0
-    var height: Double = 1.0
-    var width: Double = 1.0
-    var depth: Double = 1.0
-    var x: Double = 0.0
-    var y: Double = 0.0
-    var z: Double = 0.0
-    var rotation: Double = 0.0
-    var rotationAxis: String = ""
-    var thumbnail: String? = null
-    var modelName: String = ""
-    var isPublic: Boolean? = null
-    var price: Int? = null
-    var url: String = ""
-    var prompt: String = ""
-    var accessibility: String = ""
-    var date: Date = Date()
-    var downloads: Int = 0
     
     init {
         // id
@@ -66,12 +62,24 @@ class Model(userFireDoc: Map<String, Any>) {
             this.creatorName = it
         }
         
-        (userFireDoc["prompt"] as? String)?.let {
-            this.prompt = it
+        (userFireDoc["host"] as? String)?.let {
+            this.host = it
+        }
+        
+        (userFireDoc["fileURL"] as? String)?.let {
+            this.fileURL = it
         }
         
         (userFireDoc["url"] as? String)?.let {
             this.url = it
+        }
+        
+        (userFireDoc["storagePath"] as? String)?.let {
+            this.storagePath = it
+        }
+        
+        (userFireDoc["blueprintId"] as? String)?.let {
+            this.blueprintId = it
         }
         
         (userFireDoc["accessibility"] as? String)?.let {
@@ -82,10 +90,6 @@ class Model(userFireDoc: Map<String, Any>) {
             this.date = it
         }
         
-        (userFireDoc["creatorId"] as? String)?.let {
-            this.creatorId = it
-        }
-        
         (userFireDoc["description"] as? String)?.let {
             this.description = it
         }
@@ -94,24 +98,8 @@ class Model(userFireDoc: Map<String, Any>) {
             this.category = it
         }
         
-        (userFireDoc["rotationAxis"] as? String)?.let {
-            this.rotationAxis = it
-        }
-        
-        (userFireDoc["x"] as? Double)?.let {
-            this.x = it
-        }
-        
-        (userFireDoc["y"] as? Double)?.let {
-            this.y = it
-        }
-        
-        (userFireDoc["z"] as? Double)?.let {
-            this.z = it
-        }
-        
-        (userFireDoc["rotation"] as? Double)?.let {
-            this.rotation = it
+        (userFireDoc["fileType"] as? String)?.let {
+            this.fileType = it
         }
         
         (userFireDoc["scale"] as? Double)?.let {
@@ -130,10 +118,6 @@ class Model(userFireDoc: Map<String, Any>) {
             this.width = it
         }
         
-        (userFireDoc["depth"] as? Double)?.let {
-            this.depth = it
-        }
-        
         (userFireDoc["downloads"] as? Int)?.let {
             this.downloads = it
         }
@@ -149,41 +133,31 @@ class Model(userFireDoc: Map<String, Any>) {
         (userFireDoc["isPublic"] as? Boolean)?.let {
             this.isPublic = it
         }
-        
-        (userFireDoc["price"] as? Int)?.let {
-            this.price = it
-        }
     }
     
     /**
-     * Converts the Model to a Firestore document
+     * Converts the File to a Firestore document
      */
     fun toFirestore(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         
         result["id"] = id
+        result["host"] = host
         result["name"] = name
         result["creatorName"] = creatorName
-        result["creatorId"] = creatorId
         result["description"] = description
+        result["fileType"] = fileType
+        result["fileURL"] = fileURL
         result["category"] = category
         result["scale"] = scale
         result["size"] = size
         result["height"] = height
         result["width"] = width
-        result["depth"] = depth
-        result["x"] = x
-        result["y"] = y
-        result["z"] = z
-        result["rotation"] = rotation
-        result["rotationAxis"] = rotationAxis
         result["modelName"] = modelName
+        result["storagePath"] = storagePath
+        result["blueprintId"] = blueprintId
         result["downloads"] = downloads
         result["date"] = date
-        
-        if (prompt.isNotEmpty()) {
-            result["prompt"] = prompt
-        }
         
         if (url.isNotEmpty()) {
             result["url"] = url
@@ -195,7 +169,6 @@ class Model(userFireDoc: Map<String, Any>) {
         
         thumbnail?.let { result["thumbnail"] = it }
         isPublic?.let { result["isPublic"] = it }
-        price?.let { result["price"] = it }
         
         return result
     }
