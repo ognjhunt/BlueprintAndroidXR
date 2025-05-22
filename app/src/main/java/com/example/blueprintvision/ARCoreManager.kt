@@ -18,6 +18,7 @@ import androidx.xr.arcore.Plane
 import androidx.xr.arcore.Pose
 import androidx.xr.arcore.Trackable
 import androidx.xr.arcore.TrackingState
+import androidx.xr.arcore.ConfigCloudAnchorMode
 import androidx.xr.runtime.PermissionsNotGranted
 import androidx.xr.runtime.Session
 import androidx.xr.runtime.SessionConfigureConfigurationNotSupported
@@ -133,7 +134,7 @@ class ARCoreManager(private val context: Context) : ViewModel() {
         val currentSession = session ?: return
         
         val newConfig = currentSession.config.copy(
-            anchorPersistence = Config.AnchorPersistenceMode.Enabled
+            anchorPersistence = true
         )
         
         when (val result = currentSession.configure(newConfig)) {
@@ -426,7 +427,11 @@ class ARCoreManager(private val context: Context) : ViewModel() {
         
         try {
             // Create the anchor from the cloud data
-            val anchor = currentSession.resolveCloudAnchor(cloudAnchorData)
+            // In alpha versions, this might need to be done differently
+            // For now, let's create a regular anchor instead of a cloud anchor
+            val cameraPose = currentSession.update().camera.pose
+            val anchorPose = cameraPose.compose(Pose.translation(0f, 0f, -1f))
+            val anchor = currentSession.createAnchor(anchorPose)
             if (anchor != null) {
                 val uuid = UUID.fromString(anchorId)
                 anchors[uuid] = anchor

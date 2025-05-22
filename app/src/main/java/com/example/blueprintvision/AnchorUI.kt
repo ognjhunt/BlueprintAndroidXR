@@ -44,6 +44,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.xr.arcore.Pose
 import androidx.xr.arcore.TrackingState
+import androidx.xr.arcore.Session
+import androidx.xr.arcore.Anchor
 import java.util.UUID
 
 /**
@@ -303,8 +305,8 @@ fun AnchorItem(
                         .clip(CircleShape)
                         .background(
                             when (anchorInfo.trackingState) {
-                                TrackingState.Tracking -> Color.Green
-                                TrackingState.Paused -> Color.Yellow
+                                TrackingState.TRACKING -> Color.Green
+                                TrackingState.PAUSED -> Color.Yellow
                                 else -> Color.Red
                             }
                         )
@@ -314,7 +316,7 @@ fun AnchorItem(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Status: ${anchorInfo.trackingState.name}",
+                text = "Status: ${anchorInfo.trackingState}",
                 style = MaterialTheme.typography.bodyMedium
             )
             
