@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">BlueprintVision</string>
+    <string name="hello_android_xr">Hello Android XR.</string>
+    <string name="switch_to_home_space_mode">Switch to Home Space Mode</string>
+    <string name="switch_to_full_space_mode">Switch to Full Space Mode</string>
+    
+    <!-- Anchor Management Strings -->
+    <string name="create_anchor">Create Anchor</string>
+    <string name="persist_anchor">Persist Anchor</string>
+    <string name="load_anchor">Load Anchor</string>
+    <string name="delete_anchor">Delete Anchor</string>
+    <string name="active_anchors">Active Anchors</string>
+    <string name="persisted_anchors">Persisted Anchors</string>
+    <string name="no_anchors">No anchors found</string>
+    <string name="anchor_created">Anchor created successfully</string>
+    <string name="anchor_persisted">Anchor persisted successfully</string>
+    <string name="anchor_loaded">Anchor loaded successfully</string>
+    <string name="anchor_deleted">Anchor deleted successfully</string>
+</resources>
