@@ -46,6 +46,7 @@ class ARCoreManager(private val context: Context) : ViewModel() {
     
     private var session: Session? = null
     private val anchors = mutableMapOf<UUID, Anchor>()
+    private var frameUpdateListener: ((com.google.ar.core.Frame) -> Unit)? = null
 
     /**
      * Initializes the ARCore session
@@ -78,6 +79,48 @@ class ARCoreManager(private val context: Context) : ViewModel() {
                         )
                     }
                     Log.e(TAG, "Feature not supported: ${result.feature}")
+                }
+            }
+        }
+    }
+    
+    /**
+     * Sets up the ARCore session with a callback for completion
+     */
+    fun setupSession(callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            if (session != null) {
+                callback(true)
+                return@launch
+            }
+            
+            when (val result = context.createSession()) {
+                is SessionCreateSuccess -> {
+                    session = result.session
+                    configureSession()
+                    _uiState.update { it.copy(sessionInitialized = true) }
+                    Log.d(TAG, "Session created successfully")
+                    callback(true)
+                }
+                is SessionCreatePermissionsNotGranted -> {
+                    _uiState.update { 
+                        it.copy(
+                            sessionInitialized = false,
+                            errorMessage = "Missing permissions: ${result.permissions.joinToString()}"
+                        )
+                    }
+                    Log.e(TAG, "Missing permissions: ${result.permissions.joinToString()}")
+                    callback(false)
+                }
+                is SessionCreateFeatureNotSupported -> {
+                    _uiState.update { 
+                        it.copy(
+                            sessionInitialized = false,
+                            errorMessage = "Feature not supported: ${result.feature}"
+                        )
+                    }
+                    Log.e(TAG, "Feature not supported: ${result.feature}")
+                    callback(false)
                 }
             }
         }
@@ -310,12 +353,127 @@ class ARCoreManager(private val context: Context) : ViewModel() {
     }
     
     /**
+     * Resume ARCore session
+     */
+    fun resumeSession() {
+        session?.resume()
+        Log.d(TAG, "ARCore session resumed")
+    }
+    
+    /**
+     * Pause ARCore session
+     */
+    fun pauseSession() {
+        session?.pause()
+        Log.d(TAG, "ARCore session paused")
+    }
+    
+    /**
+     * Creates an anchor at the current pose and returns its ID and data for persistence
+     */
+    fun createAnchor(callback: (String?, String) -> Unit) {
+        val currentSession = session ?: run {
+            Log.e(TAG, "Cannot create anchor: session is null")
+            callback(null, "")
+            return
+        }
+        
+        try {
+            // Get the camera pose (for placing in front of the user if no hit test)
+            val cameraPose = currentSession.update().camera.pose
+            
+            // Create a pose 1 meter in front of the camera
+            val anchorPose = cameraPose.compose(
+                Pose.translation(0f, 0f, -1f)
+            )
+            
+            // Create the anchor
+            val anchor = currentSession.createAnchor(anchorPose)
+            val anchorId = UUID.randomUUID().toString()
+            anchors[UUID.fromString(anchorId)] = anchor
+            
+            // Get the cloud anchor ID
+            val cloudAnchorData = anchor.cloudAnchorId ?: ""
+            
+            // Update UI state
+            _uiState.update { state ->
+                val updatedAnchors = state.anchors.toMutableMap()
+                updatedAnchors[UUID.fromString(anchorId)] = AnchorInfo(
+                    id = UUID.fromString(anchorId),
+                    trackingState = anchor.trackingState,
+                    isPersisted = false
+                )
+                state.copy(anchors = updatedAnchors)
+            }
+            
+            Log.d(TAG, "Anchor created with ID: $anchorId")
+            callback(anchorId, cloudAnchorData)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create anchor: ${e.message}", e)
+            callback(null, "")
+        }
+    }
+    
+    /**
+     * Resolves an anchor from cloud anchor data
+     */
+    fun resolveAnchor(anchorId: String, cloudAnchorData: String) {
+        val currentSession = session ?: run {
+            Log.e(TAG, "Cannot resolve anchor: session is null")
+            return
+        }
+        
+        try {
+            // Create the anchor from the cloud data
+            val anchor = currentSession.resolveCloudAnchor(cloudAnchorData)
+            if (anchor != null) {
+                val uuid = UUID.fromString(anchorId)
+                anchors[uuid] = anchor
+                
+                // Update UI state
+                _uiState.update { state ->
+                    val updatedAnchors = state.anchors.toMutableMap()
+                    updatedAnchors[uuid] = AnchorInfo(
+                        id = uuid,
+                        trackingState = anchor.trackingState,
+                        isPersisted = true,
+                        persistentId = UUID.fromString(cloudAnchorData)
+                    )
+                    state.copy(anchors = updatedAnchors)
+                }
+                
+                Log.d(TAG, "Anchor resolved with ID: $anchorId")
+            } else {
+                Log.e(TAG, "Failed to resolve anchor: null result")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to resolve anchor: ${e.message}", e)
+        }
+    }
+    
+    /**
+     * Set a listener for frame updates
+     */
+    fun setFrameUpdateListener(listener: (com.google.ar.core.Frame) -> Unit) {
+        frameUpdateListener = listener
+    }
+    
+    /**
+     * Close the ARCore session and release resources
+     */
+    fun close() {
+        frameUpdateListener = null
+        session?.close()
+        session = null
+    }
+    
+    /**
      * Cleanup resources when no longer needed
      */
     override fun onCleared() {
         super.onCleared()
-        session?.close()
-        session = null
+        close()
     }
     
     companion object {
